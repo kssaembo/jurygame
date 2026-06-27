@@ -1,0 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Cinzel", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Custom gold & crimson theme colors matching The Genius style */
+  --color-gold-50: #fefdf0;
+  --color-gold-100: #fdfae0;
+  --color-gold-200: #faf1b6;
+  --color-gold-300: #f5e381;
+  --color-gold-400: #edd052;
+  --color-gold-500: #dfb326;
+  --color-gold-600: #c2931b;
+  --color-gold-700: #9e7116;
+  --color-gold-800: #7e5616;
+  --color-gold-900: #674415;
+  --color-gold-950: #3c240a;
+
+  --color-crimson-50: #fff0f1;
+  --color-crimson-100: #ffe1e3;
+  --color-crimson-200: #ffc7cb;
+  --color-crimson-300: #ffa0a7;
+  --color-crimson-400: #ff6d79;
+  --color-crimson-500: #fa3a4d;
+  --color-crimson-600: #e81d33;
+  --color-crimson-700: #c31024;
+  --color-crimson-800: #a21021;
+  --color-crimson-900: #861220;
+  --color-crimson-950: #4b040c;
+}
+
+/* Base custom styling for dramatic backgrounds */
+body {
+  background-color: #0b0c10;
+  color: #f3f4f6;
+  font-family: var(--font-sans);
+}
+
+.genius-gradient-bg {
+  background: radial-gradient(circle at center, #151821 0%, #07080b 100%);
+}
+
+.genius-gold-border {
+  border-image: linear-gradient(to right, #7e5616, #edd052, #7e5616) 1;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0d0e12;
+}
+::-webkit-scrollbar-thumb {
+  background: #3c240a;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #7e5616;
+}
+
