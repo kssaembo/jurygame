@@ -60,4 +60,5 @@ export interface GameState {
   logs: GameLog[];
   isShufflingOrder?: boolean;
   tempJuryOrder?: number[];
+  activeCheckIndex?: number | null;
 }

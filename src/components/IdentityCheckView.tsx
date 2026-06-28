@@ -1,18 +1,32 @@
 import { useState, useEffect } from 'react';
-import { Player, Role } from '../types';
+import { Player, Role, GameState } from '../types';
 import { Eye, EyeOff, ShieldAlert, Sparkles, Check, CheckCircle2, Clock } from 'lucide-react';
 
 interface IdentityCheckViewProps {
   players: Player[];
+  gameState?: GameState;
+  onUpdateState?: (newState: GameState | ((prev: GameState) => GameState)) => void;
   onComplete: () => void;
 }
 
-export default function IdentityCheckView({ players, onComplete }: IdentityCheckViewProps) {
+export default function IdentityCheckView({ players, gameState, onUpdateState, onComplete }: IdentityCheckViewProps) {
   // Track which player index has checked their role
   const [checkedStatus, setCheckedStatus] = useState<{ [index: number]: boolean }>({});
-  const [activeCheckIndex, setActiveCheckIndex] = useState<number | null>(null);
+  const [localActiveCheckIndex, setLocalActiveCheckIndex] = useState<number | null>(null);
   const [isRevealed, setIsRevealed] = useState<boolean>(false);
   const [seconds, setSeconds] = useState<number>(0);
+
+  // If gameState has activeCheckIndex, sync it to local state
+  useEffect(() => {
+    if (gameState && gameState.activeCheckIndex !== undefined) {
+      setLocalActiveCheckIndex(gameState.activeCheckIndex);
+      if (gameState.activeCheckIndex === null) {
+        setIsRevealed(false);
+      }
+    }
+  }, [gameState?.activeCheckIndex]);
+
+  const activeCheckIndex = localActiveCheckIndex;
 
   // Timer starting fresh at 00:00 on each player change
   useEffect(() => {
@@ -32,16 +46,22 @@ export default function IdentityCheckView({ players, onComplete }: IdentityCheck
   };
 
   const handleOpenCheck = (index: number) => {
-    setActiveCheckIndex(index);
+    setLocalActiveCheckIndex(index);
     setIsRevealed(false);
+    if (onUpdateState) {
+      onUpdateState(prev => ({ ...prev, activeCheckIndex: index }));
+    }
   };
 
   const handleCloseCheck = () => {
     if (activeCheckIndex !== null) {
       setCheckedStatus(prev => ({ ...prev, [activeCheckIndex]: true }));
     }
-    setActiveCheckIndex(null);
+    setLocalActiveCheckIndex(null);
     setIsRevealed(false);
+    if (onUpdateState) {
+      onUpdateState(prev => ({ ...prev, activeCheckIndex: null }));
+    }
   };
 
   const allChecked = players.every((_, idx) => checkedStatus[idx]);
@@ -218,10 +238,15 @@ export default function IdentityCheckView({ players, onComplete }: IdentityCheck
               </div>
               
               {/* Dynamic Running Timer */}
-              <div className="flex items-center gap-2 bg-gold-950/50 border border-gold-600/30 px-3.5 py-1.5 rounded-lg text-gold-400 font-mono font-bold text-sm">
-                <Clock className="w-4 h-4 animate-spin-slow" />
-                <span>정체 확인 시간:</span>
-                <span className="text-white text-base font-black">{formatTimer(seconds)}</span>
+              <div className="flex flex-col items-end gap-1">
+                <div className="flex items-center gap-2 bg-gold-950/50 border border-gold-600/30 px-3.5 py-1.5 rounded-lg text-gold-400 font-mono font-bold text-sm">
+                  <Clock className="w-4 h-4 animate-spin-slow" />
+                  <span>정체 확인 시간:</span>
+                  <span className="text-white text-base font-black">{formatTimer(seconds)}</span>
+                </div>
+                <span className="text-[10px] text-gray-500 font-medium">
+                  학생별로 정체 확인 시간을 일정하게 유지해주세요.
+                </span>
               </div>
             </div>
 

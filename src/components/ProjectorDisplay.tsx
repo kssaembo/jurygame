@@ -26,6 +26,7 @@ export default function ProjectorDisplay({ gameState }: ProjectorDisplayProps) {
     assassinationTargetIndex,
     assassinationSuccess,
     finalWinner,
+    activeCheckIndex,
   } = gameState;
 
   // Track revealed votes in ballot_result phase
@@ -171,29 +172,42 @@ export default function ProjectorDisplay({ gameState }: ProjectorDisplayProps) {
 
   // Render Identity Check Phase
   if (phase === 'identity_check') {
+    const hasActivePlayer = activeCheckIndex !== null && activeCheckIndex !== undefined;
+    const activePlayerName = hasActivePlayer ? players[activeCheckIndex]?.name : '';
+
     return (
       <div id="projector-identity-check" className="h-full flex flex-col justify-center items-center p-8 text-center genius-gradient-bg border-4 border-double border-gold-800/30 rounded-2xl min-h-[550px]">
-        <div className="space-y-6 max-w-2xl animate-pulse">
+        <div className="space-y-6 max-w-3xl animate-fade-in w-full">
           <div className="flex justify-center">
-            <div className="p-4 bg-gold-950/20 rounded-full border border-gold-600/30 text-gold-400">
-              <Eye className="w-14 h-14" />
+            <div className={`p-5 rounded-full border border-gold-600/30 text-gold-400 shadow-xl ${hasActivePlayer ? 'bg-gold-950/30 animate-bounce' : 'bg-gold-950/10'}`}>
+              <Eye className="w-16 h-16" />
             </div>
           </div>
-          <h2 className="font-display text-3xl font-bold tracking-widest text-gold-400">
-            비밀 정체 배정 완료
+          <h2 className="font-display text-4xl font-black tracking-widest text-gold-400 uppercase">
+            비밀 정체 배정 중
           </h2>
           <div className="h-[2px] bg-gradient-to-r from-transparent via-gold-600/40 to-transparent w-full" />
-          <p className="text-lg font-bold text-gray-200">
-            "각 조의 대표는 선생님 컴퓨터 앞으로 나와 주십시오"
-          </p>
-          <div className="bg-black/60 p-4 rounded-lg border border-red-950 max-w-md mx-auto space-y-2 text-left">
-            <p className="text-xs text-red-400 font-bold flex items-center gap-1">
+          
+          <div className="py-6 min-h-[120px] flex items-center justify-center">
+            {hasActivePlayer ? (
+              <p className="text-3xl font-black text-white leading-relaxed max-w-2xl animate-pulse">
+                📢 <span className="text-gold-400 underline underline-offset-4">{activePlayerName}</span> 플레이어는 선생님 컴퓨터 앞으로 나와서 정체를 확인해 주세요.
+              </p>
+            ) : (
+              <p className="text-2xl font-bold text-gray-200">
+                "각 조의 대표는 선생님 컴퓨터 앞으로 나와 주십시오"
+              </p>
+            )}
+          </div>
+
+          <div className="bg-black/60 p-5 rounded-2xl border border-red-950/40 max-w-md mx-auto space-y-3 text-left shadow-lg">
+            <p className="text-xs text-red-400 font-bold flex items-center gap-1.5">
               ⚠️ 주의 (Class Rules)
             </p>
-            <ul className="text-xs text-gray-400 list-disc list-inside space-y-1">
+            <ul className="text-xs text-gray-400 list-disc list-inside space-y-2">
               <li>다른 학생들은 정체 확인 중 화면을 보거나 자리를 이탈해서는 안 됩니다.</li>
-              <li>자신의 정체 카드를 확인한 즉시 <span className="text-gold-400 font-semibold">[화면 가리기]</span>를 클릭하세요.</li>
-              <li>정체 확인을 모두 마칠 때까지 침묵을 유지하세요.</li>
+              <li>자신의 정체 카드를 확인한 후 비밀을 유지해 주세요.</li>
+              <li>정체 확인 시 자신의 정체가 노출될 수 있는 리액션을 하지 말아주세요.</li>
             </ul>
           </div>
         </div>
@@ -545,10 +559,10 @@ export default function ProjectorDisplay({ gameState }: ProjectorDisplayProps) {
 
         {/* Phase: Game Over (Victory Retrospective & Final Sniping) */}
         {phase === 'game_over' && (
-          <div className="space-y-8 w-full max-w-2xl transform transition-all duration-700 scale-100 animate-fade-in">
+          <div className="space-y-8 w-full max-w-6xl transform transition-all duration-700 scale-100 animate-fade-in mx-auto">
             {/* If we are in the sniping stage, show the drama */}
             {assassinationStage ? (
-              <div className="space-y-6">
+              <div className="space-y-6 max-w-2xl mx-auto">
                 <div className="space-y-1">
                   <span className="inline-block px-3 py-1 bg-red-950 text-red-400 rounded-full text-xs font-bold font-mono tracking-widest border border-red-500/30 animate-pulse uppercase">
                     THE SNIPER ROUND
@@ -584,7 +598,7 @@ export default function ProjectorDisplay({ gameState }: ProjectorDisplayProps) {
               </div>
             ) : (
               // Ultimate winner declared!
-              <div className="space-y-8 animate-fade-in relative overflow-hidden">
+              <div className="space-y-8 animate-fade-in relative overflow-hidden w-full">
                 {/* Floating particles background on projector */}
                 <div className="absolute inset-0 pointer-events-none flex justify-around items-center opacity-30 select-none">
                   <span className="text-5xl animate-bounce duration-1000">🎉</span>
@@ -606,37 +620,36 @@ export default function ProjectorDisplay({ gameState }: ProjectorDisplayProps) {
 
                 <div className="space-y-4">
                   <p className="text-lg font-mono tracking-widest text-gold-500 uppercase font-black">COMMEMORATION CELEBRATION</p>
-                  <h3 className={`text-7xl font-display font-black tracking-widest uppercase filter drop-shadow-[0_0_20px_rgba(212,175,55,0.3)] animate-pulse ${
-                    finalWinner === 'citizen' ? 'text-gold-400' : 'text-red-500'
-                  }`}>
-                    {finalWinner === 'citizen' ? '🏆 시민 팀 최종 승리 🏆' : '💀 범죄자 팀 최종 승리 💀'}
-                  </h3>
-                  <p className="text-xl text-gray-300 font-bold max-w-xl mx-auto">
-                    {finalWinner === 'citizen' ? '시민 리더의 명석한 판단과 정직한 배심원들의 투표로 사회적 정의를 실현했습니다!' : '교묘한 거짓말과 치밀한 정비 전략으로 범죄 집단이 배심원 재판을 완전히 장악했습니다!'}
-                  </p>
+                  <div className="flex justify-center items-center w-full">
+                    <h3 className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-black tracking-widest uppercase filter drop-shadow-[0_0_20px_rgba(212,175,55,0.3)] animate-pulse whitespace-nowrap ${
+                      finalWinner === 'citizen' ? 'text-gold-400' : 'text-red-500'
+                    }`}>
+                      {finalWinner === 'citizen' ? '🏆 시민 팀 최종 승리 🏆' : '💀 범죄자 팀 최종 승리 💀'}
+                    </h3>
+                  </div>
                 </div>
 
                 {/* Final Retrospective Table */}
-                <div className="bg-black/40 border border-gold-900/30 rounded-xl p-5 max-w-xl mx-auto space-y-4 text-left shadow-2xl">
-                  <h5 className="text-base font-black text-gold-400 tracking-wider text-center uppercase border-b border-gold-950 pb-2">플레이어 역할 공개</h5>
-                  <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="bg-black/40 border border-gold-900/30 rounded-2xl p-8 max-w-6xl w-full mx-auto space-y-6 text-left shadow-2xl">
+                  <h5 className="text-xl font-black text-gold-400 tracking-wider text-center uppercase border-b border-gold-950/40 pb-4">플레이어 역할 공개</h5>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                     {players.map((p, idx) => (
-                      <div key={p.id} className="p-2.5 rounded-lg bg-[#0e1017] border border-gray-800 flex justify-between items-center shadow-md">
-                        <div className="flex items-center gap-2">
-                          <PlayerAvatar index={idx} className="w-8 h-8" />
-                          <span className="font-extrabold text-sm text-gray-200">{p.name}</span>
+                      <div key={p.id} className="p-6 rounded-xl bg-[#0e1017] border border-gray-800 flex flex-col items-center justify-center text-center gap-4 min-h-[220px] shadow-lg hover:border-gold-500/20 transition-all duration-300">
+                        <PlayerAvatar index={idx} className="w-16 h-16" />
+                        <div className="space-y-1.5 flex flex-col items-center">
+                          <span className="font-black text-lg text-gray-200 line-clamp-1">{p.name}</span>
+                          <span className={`text-xs sm:text-sm font-black px-3 py-1.5 rounded-full ${
+                            p.role === Role.CITIZEN_LEADER ? 'bg-gold-950 text-gold-400 border border-gold-500/30' :
+                            p.role === Role.CITIZEN ? 'bg-gray-800 text-gray-400' :
+                            p.role === Role.CRIMINAL_LEADER ? 'bg-red-950 text-red-400 border border-red-500/30' :
+                            'bg-red-950/50 text-red-300'
+                          }`}>
+                            {p.role === Role.CITIZEN && '시민'}
+                            {p.role === Role.CITIZEN_LEADER && '시민 리더'}
+                            {p.role === Role.CRIMINAL && '범죄자'}
+                            {p.role === Role.CRIMINAL_LEADER && '범죄자 리더'}
+                          </span>
                         </div>
-                        <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${
-                          p.role === Role.CITIZEN_LEADER ? 'bg-gold-950 text-gold-400 border border-gold-500/30' :
-                          p.role === Role.CITIZEN ? 'bg-gray-800 text-gray-400' :
-                          p.role === Role.CRIMINAL_LEADER ? 'bg-red-950 text-red-400 border border-red-500/30' :
-                          'bg-red-950/50 text-red-300'
-                        }`}>
-                          {p.role === Role.CITIZEN && '시민'}
-                          {p.role === Role.CITIZEN_LEADER && '시민 리더'}
-                          {p.role === Role.CRIMINAL && '범죄자'}
-                          {p.role === Role.CRIMINAL_LEADER && '범죄자 리더'}
-                        </span>
                       </div>
                     ))}
                   </div>

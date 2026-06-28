@@ -855,9 +855,6 @@ export default function TeacherConsole({ gameState, onUpdateState, onOpenManual 
                     }`}>
                       {finalWinner === 'citizen' ? '시민 팀' : '범죄자 팀'}
                     </p>
-                    <p className="text-lg font-bold text-gray-300">
-                      {finalWinner === 'citizen' ? '시민 리더의 영리한 작전과 배심원단의 소신 투표로 범죄 소탕 완료!' : '범죄자 리더의 완벽한 심리전과 저격으로 최종 승리!'}
-                    </p>
                   </div>
                 </div>
 

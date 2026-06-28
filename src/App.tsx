@@ -28,7 +28,8 @@ const initialGameState: GameState = {
   assassinationTargetIndex: null,
   assassinationSuccess: null,
   finalWinner: null,
-  logs: []
+  logs: [],
+  activeCheckIndex: null
 };
 
 export const ROLE_COUNTS: { [key: number]: { citizen: number; criminal: number } } = {
@@ -80,6 +81,19 @@ export default function App() {
   const [isManualOpen, setIsManualOpen] = useState(false);
   const [isAdminLogOpen, setIsAdminLogOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [showActivationAlert, setShowActivationAlert] = useState(false);
+
+  // Show activation alert if we load or transition into identity_check and haven't acknowledged it yet
+  useEffect(() => {
+    if (gameState.phase === 'identity_check' && !isProjectorOnlyTab) {
+      const acknowledged = sessionStorage.getItem('activation_alert_acknowledged');
+      if (!acknowledged) {
+        setShowActivationAlert(true);
+      }
+    } else {
+      setShowActivationAlert(false);
+    }
+  }, [gameState.phase, isProjectorOnlyTab]);
 
   // Sync state changes with localStorage & BroadcastChannel
   const updateGameState = (newState: GameState | ((prev: GameState) => GameState)) => {
@@ -136,6 +150,9 @@ export default function App() {
 
   // Set up roles and logs
   const handleStartGame = (playerNames: string[]) => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('activation_alert_acknowledged');
+    }
     const count = playerNames.length;
     const distribution = ROLE_COUNTS[count] || { citizen: Math.ceil(count * 7 / 12), criminal: Math.floor(count * 5 / 12) };
 
@@ -253,7 +270,11 @@ export default function App() {
                   handleOpenProjectorWindow();
                   setLayoutMode('teacher_only');
                 }}
-                className="px-3.5 py-1.5 text-xs rounded text-gray-400 hover:text-white hover:bg-gray-900 transition flex items-center gap-1.5"
+                className={`px-3.5 py-1.5 text-xs rounded transition flex items-center gap-1.5 ${
+                  gameState.phase === 'identity_check'
+                    ? 'bg-red-600 hover:bg-red-500 text-white font-extrabold animate-pulse ring-2 ring-red-400 ring-offset-2 ring-offset-black shadow-lg shadow-red-950/50'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-900'
+                }`}
               >
                 <Eye className="w-3.5 h-3.5" /> 게임 운영 페이지(새 창 열기)
               </button>
@@ -295,7 +316,9 @@ export default function App() {
                 {gameState.phase === 'identity_check' ? (
                   <IdentityCheckView
                     players={gameState.players}
-                    onComplete={() => updateGameState(prev => ({ ...prev, phase: 'president_order' }))}
+                    gameState={gameState}
+                    onUpdateState={updateGameState}
+                    onComplete={() => updateGameState(prev => ({ ...prev, phase: 'president_order', activeCheckIndex: null }))}
                   />
                 ) : (
                   <TeacherConsole
@@ -342,6 +365,35 @@ export default function App() {
         roundsHistory={gameState.roundsHistory}
         players={gameState.players}
       />
+
+      {showActivationAlert && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-md bg-[#0e1017] border-2 border-red-500 rounded-2xl p-6 shadow-2xl space-y-6 text-center">
+            <div className="mx-auto w-16 h-16 rounded-full bg-red-950/40 border border-red-500/50 flex items-center justify-center text-red-500 animate-bounce">
+              <Eye className="w-8 h-8" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-xl font-black text-red-500 tracking-wider">알림</h3>
+              <p className="text-lg text-gray-100 leading-relaxed font-bold">
+                게임 운영 페이지를 활성화 해주세요.
+              </p>
+              <p className="text-xs text-gray-400 leading-relaxed">
+                우측 상단에서 빨갛게 깜빡거리는 <strong className="text-white font-bold">[게임 운영 페이지]</strong> 버튼을 먼저 클릭하여 게임 디스플레이 창을 활성화한 후에 비밀 확인을 진행해 주세요.
+              </p>
+            </div>
+            <button
+              id="confirm-activation-btn"
+              onClick={() => {
+                sessionStorage.setItem('activation_alert_acknowledged', 'true');
+                setShowActivationAlert(false);
+              }}
+              className="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-black rounded-xl transition shadow-lg shadow-red-950/50"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );
