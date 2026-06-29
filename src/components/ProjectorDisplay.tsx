@@ -184,7 +184,7 @@ export default function ProjectorDisplay({ gameState }: ProjectorDisplayProps) {
             </div>
           </div>
           <h2 className="font-display text-4xl font-black tracking-widest text-gold-400 uppercase">
-            비밀 정체 배정 중
+            플레이어 정체 확인 중
           </h2>
           <div className="h-[2px] bg-gradient-to-r from-transparent via-gold-600/40 to-transparent w-full" />
           
@@ -195,7 +195,7 @@ export default function ProjectorDisplay({ gameState }: ProjectorDisplayProps) {
               </p>
             ) : (
               <p className="text-2xl font-bold text-gray-200">
-                "각 조의 대표는 선생님 컴퓨터 앞으로 나와 주십시오"
+                호명하는 플레이어는 선생님 컴퓨터 앞으로 나와 주세요.
               </p>
             )}
           </div>
@@ -227,21 +227,24 @@ export default function ProjectorDisplay({ gameState }: ProjectorDisplayProps) {
               {[1, 2, 3, 4, 5].map(r => {
                 const isPassed = roundsHistory.find(h => h.round === r);
                 const isCurrent = currentRound === r;
+                const isCurrentRoundInReveal = isCurrent && phase === 'ballot_result';
+                const allCardsRevealed = revealedVotes.length > 0 && revealedVotes.every(v => v);
+
                 let verdictText = '-';
-                if (isPassed) {
+                if (isPassed && (!isCurrentRoundInReveal || allCardsRevealed)) {
                   verdictText = isPassed.result === 'citizen' ? '유죄' : '무죄';
-                } else if (isCurrent) {
+                } else if (isCurrent || isCurrentRoundInReveal) {
                   verdictText = '진행중';
                 }
                 return (
                   <div
                     key={r}
                     className={`w-14 py-1.5 rounded text-center text-xs font-mono font-black transition-all flex flex-col justify-center items-center ${
-                      isPassed
+                      isPassed && (!isCurrentRoundInReveal || allCardsRevealed)
                         ? isPassed.result === 'citizen'
                           ? 'bg-emerald-950 border border-emerald-500 text-emerald-400'
                           : 'bg-red-950 border border-red-500 text-red-400'
-                        : isCurrent
+                        : isCurrent || isCurrentRoundInReveal
                         ? 'bg-gold-500 text-black font-extrabold shadow shadow-gold-500/50 animate-pulse'
                         : 'bg-black/60 border border-gray-800 text-gray-600'
                     }`}
@@ -515,7 +518,7 @@ export default function ProjectorDisplay({ gameState }: ProjectorDisplayProps) {
             {revealedVotes.every(v => v) && (
               <div className="space-y-4">
                 <div className="p-5 border-2 genius-gold-border rounded-xl bg-black/80 max-w-md mx-auto space-y-2 animate-fade-in shadow-2xl">
-                  <p className="text-xs font-mono tracking-widest text-gold-500 uppercase">FINAL RULING</p>
+                  <p className="text-xs font-mono tracking-widest text-gold-500 uppercase">판결</p>
                   
                   {roundsHistory.find(h => h.round === currentRound)?.result === 'citizen' ? (
                     <div className="space-y-1">
@@ -562,26 +565,26 @@ export default function ProjectorDisplay({ gameState }: ProjectorDisplayProps) {
           <div className="space-y-8 w-full max-w-6xl transform transition-all duration-700 scale-100 animate-fade-in mx-auto">
             {/* If we are in the sniping stage, show the drama */}
             {assassinationStage ? (
-              <div className="space-y-6 max-w-2xl mx-auto">
-                <div className="space-y-1">
-                  <span className="inline-block px-3 py-1 bg-red-950 text-red-400 rounded-full text-xs font-bold font-mono tracking-widest border border-red-500/30 animate-pulse uppercase">
+              <div className="space-y-8 max-w-4xl mx-auto">
+                <div className="space-y-2">
+                  <span className="inline-block px-6 py-2 bg-red-950 text-red-400 rounded-full text-lg font-black font-mono tracking-widest border border-red-500/30 animate-pulse uppercase">
                     THE SNIPER ROUND
                   </span>
-                  <h3 className="text-3xl font-display font-black text-white">
+                  <h3 className="text-6xl font-display font-black text-white tracking-widest mt-2">
                     최종 역전 리더 저격
                   </h3>
-                  <p className="text-sm text-gray-300">
+                  <p className="text-2xl text-gray-100 font-bold leading-normal mt-4">
                     {winnerTeam === 'citizen' ? (
-                      <span>재판 결과 <span className="text-gold-400 font-bold">시민 팀(3승)</span>이 승리했으나, 범죄자 리더에게 최후의 역전 기회가 부여됩니다!</span>
+                      <span>재판 결과 <span className="text-gold-400 font-black">시민 팀(3승)</span>이 승리했으나, 범죄자 리더에게 최후의 역전 기회가 부여됩니다!</span>
                     ) : (
-                      <span>재판 결과 <span className="text-crimson-400 font-bold">범죄자 팀(3승)</span>이 승리했으나, 시민 리더에게 최후의 역전 기회가 부여됩니다!</span>
+                      <span>재판 결과 <span className="text-crimson-400 font-black">범죄자 팀(3승)</span>이 승리했으나, 시민 리더에게 최후의 역전 기회가 부여됩니다!</span>
                     )}
                   </p>
                 </div>
 
-                <div className="p-6 bg-[#0d0e12] border border-red-900/40 rounded-xl space-y-4 shadow-xl">
-                  <p className="text-xs text-red-400 font-bold tracking-wider">🎯 TARGET ASSASSINATION RULE</p>
-                  <p className="text-xs text-gray-300 leading-relaxed max-w-md mx-auto">
+                <div className="p-10 bg-[#0d0e12] border-2 border-red-800/40 rounded-2xl space-y-6 shadow-2xl">
+                  <p className="text-xl text-red-400 font-black tracking-widest uppercase">🎯 TARGET ASSASSINATION RULE</p>
+                  <p className="text-xl text-gray-200 leading-relaxed max-w-2xl mx-auto font-medium">
                     {winnerTeam === 'citizen' ? (
                       <span>패배한 <span className="text-red-400 font-bold">범죄자 팀 리더</span>가 시민 팀의 <span className="text-gold-400 font-bold">시민 리더</span>를 저격하여 맞추면 범죄자 팀의 역전 승리! 틀리면 시민 팀의 완승으로 종료됩니다.</span>
                     ) : (
@@ -590,7 +593,7 @@ export default function ProjectorDisplay({ gameState }: ProjectorDisplayProps) {
                   </p>
                   
                   {assassinationTargetIndex !== null && (
-                    <div className="py-2.5 px-5 bg-red-950/20 border border-red-800/40 rounded-xl text-red-300 text-sm font-bold max-w-xs mx-auto animate-pulse">
+                    <div className="py-4 px-8 bg-red-950/30 border-2 border-red-500 rounded-2xl text-red-200 text-2xl font-black max-w-md mx-auto animate-pulse">
                       조준 표적: {players[assassinationTargetIndex]?.name}
                     </div>
                   )}

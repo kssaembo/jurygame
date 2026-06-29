@@ -515,19 +515,19 @@ export default function TeacherConsole({ gameState, onUpdateState, onOpenManual 
 
         {/* Phase Controls */}
         {phase === 'president_order' && (
-          <div id="teacher-president-order" className="space-y-4 py-4 text-center">
-            <h4 className="text-sm font-bold text-gray-300">배심원장 순서 무작위 결정</h4>
-            <p className="text-xs text-gray-400 max-w-sm mx-auto leading-relaxed">
+          <div id="teacher-president-order" className="space-y-8 py-8 text-center max-w-4xl mx-auto">
+            <h4 className="text-4xl sm:text-5xl font-black text-gold-400 tracking-wider">배심원장 순서 무작위 결정</h4>
+            <p className="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed font-bold">
               본 게임 진행에 앞서, 배심원단 지정을 주도할 배심원장 순서를 무작위로 추첨합니다. 아래 버튼을 눌러 스크린에 결과를 공개하세요.
             </p>
             
             {isGeneratingOrder ? (
-              <div className="py-6 space-y-3">
-                <div className="w-10 h-10 border-4 border-gold-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                <p className="text-xs text-gold-400 font-bold tracking-wider animate-pulse">배심원장 순서 셔플 중...</p>
-                <div className="flex justify-center gap-1.5 overflow-hidden max-w-xs mx-auto opacity-50">
+              <div className="py-10 space-y-4">
+                <div className="w-16 h-16 border-4 border-gold-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                <p className="text-xl text-gold-400 font-bold tracking-wider animate-pulse">배심원장 순서 셔플 중...</p>
+                <div className="flex justify-center gap-2 overflow-hidden max-w-md mx-auto opacity-50">
                   {tempJuryOrder.slice(0, 4).map((idx, index) => (
-                    <span key={index} className="px-2 py-1 bg-gray-900 border border-gray-800 text-[10px] text-gray-500 rounded">
+                    <span key={index} className="px-3 py-2 bg-gray-900 border border-gray-800 text-sm text-gray-500 rounded">
                       {players[idx]?.name}
                     </span>
                   ))}
@@ -537,9 +537,9 @@ export default function TeacherConsole({ gameState, onUpdateState, onOpenManual 
               <button
                 id="generate-president-order-btn"
                 onClick={handleGeneratePresidentOrder}
-                className="px-6 py-3 bg-gold-600 text-black font-extrabold text-xs rounded hover:bg-gold-500 transition shadow shadow-gold-950/20 flex items-center gap-1.5 mx-auto"
+                className="px-18 py-9 bg-gold-600 text-black font-black text-2xl sm:text-3xl rounded-2xl hover:bg-gold-500 hover:scale-105 transition shadow-2xl shadow-gold-950/40 flex items-center gap-4 mx-auto"
               >
-                <Play className="w-3.5 h-3.5 fill-black" /> 배심원장 순서 결정 및 게임 개시
+                <Play className="w-8 h-8 sm:w-10 sm:h-10 fill-black" /> 배심원장 순서 결정 및 게임 개시
               </button>
             )}
           </div>
@@ -831,7 +831,7 @@ export default function TeacherConsole({ gameState, onUpdateState, onOpenManual 
                       : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                   }`}
                 >
-                  최종 저격 격발 (CONFIRM SNIPE)
+                  리더 확인
                 </button>
               </div>
             ) : (

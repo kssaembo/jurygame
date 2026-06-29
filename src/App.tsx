@@ -254,12 +254,12 @@ export default function App() {
         {/* Layout controllers and screen separation tools */}
         {gameState.phase !== 'setup' && (
           <div className="flex flex-wrap items-center gap-2">
-            <div className="bg-black/50 border border-gray-800 rounded p-0.5 flex gap-1">
+            <div className="flex items-center gap-3.5">
               <button
                 id="layout-teacher-btn"
                 onClick={() => setLayoutMode('teacher_only')}
-                className={`px-3.5 py-1.5 text-xs rounded transition flex items-center gap-1.5 ${
-                  layoutMode === 'teacher_only' ? 'bg-gold-600 text-black font-bold' : 'text-gray-400 hover:text-white'
+                className={`px-4 py-2 text-xs rounded-lg border transition flex items-center gap-1.5 ${
+                  layoutMode === 'teacher_only' ? 'bg-gold-600 border-gold-600 text-black font-bold shadow-md shadow-gold-950/20' : 'bg-[#0d0e12] border-gray-800 text-gray-400 hover:text-white'
                 }`}
               >
                 <Monitor className="w-3.5 h-3.5" /> 교사용 운영 페이지
@@ -270,10 +270,10 @@ export default function App() {
                   handleOpenProjectorWindow();
                   setLayoutMode('teacher_only');
                 }}
-                className={`px-3.5 py-1.5 text-xs rounded transition flex items-center gap-1.5 ${
+                className={`px-4 py-2 text-xs rounded-lg border transition flex items-center gap-1.5 ${
                   gameState.phase === 'identity_check'
-                    ? 'bg-red-600 hover:bg-red-500 text-white font-extrabold animate-pulse ring-2 ring-red-400 ring-offset-2 ring-offset-black shadow-lg shadow-red-950/50'
-                    : 'text-gray-400 hover:text-white hover:bg-gray-900'
+                    ? 'bg-red-600 border-red-600 hover:bg-red-500 text-white font-extrabold animate-pulse ring-2 ring-red-400 ring-offset-2 ring-offset-black shadow-lg shadow-red-950/50'
+                    : 'bg-[#0d0e12] border-gray-800 text-gray-400 hover:text-white hover:bg-gray-900'
                 }`}
               >
                 <Eye className="w-3.5 h-3.5" /> 게임 운영 페이지(새 창 열기)
