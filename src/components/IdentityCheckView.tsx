@@ -77,7 +77,7 @@ export default function IdentityCheckView({ players, gameState, onUpdateState, o
           <div className="bg-black/50 border border-gold-900/30 p-4 rounded-xl text-left space-y-2">
             <h5 className="text-xs font-bold font-mono text-gold-500 uppercase tracking-wider">시민 행동 강령</h5>
             <p className="text-sm text-gray-300 leading-relaxed">
-              배심원 재판에 추천될 경우 신중히 생각하여 <span className="text-green-400 font-bold">유죄(Guilty)</span>를 투표해야 합니다. 범죄자들의 거짓 선동에 넘어가지 않도록 조심하십시오!
+              배심원 재판에 추천될 경우 신중히 생각하여 유죄(Guilty)를 투표해야 합니다.
             </p>
           </div>
         </div>
@@ -114,7 +114,7 @@ export default function IdentityCheckView({ players, gameState, onUpdateState, o
           </div>
           
           <p className="text-xs text-gray-400 leading-relaxed text-left bg-gold-950/10 p-3 rounded-lg border border-gold-950/40">
-            ⚠️ <strong className="text-gold-400">주의사항</strong>: 범죄자 팀 리더의 이름은 당신에게도 감지되지 않습니다! 또한 게임이 최종 종료될 때 범죄자 리더가 당신을 정조준해 저격하면 대역전패하게 되므로, 시민 리더 본인의 정체를 일반 시민인 것처럼 철저히 숨기십시오.
+            ⚠️ <strong className="text-gold-400">주의사항</strong>: 범죄자 팀 리더의 이름은 알 수 없습니다. 게임이 최종 종료될 때 범죄자 리더가 당신을 맞추게 되면 역전패하게 되므로, 본인의 정체를 일반 시민인 것처럼 철저히 숨기십시오.
           </p>
         </div>
       );
@@ -147,7 +147,7 @@ export default function IdentityCheckView({ players, gameState, onUpdateState, o
         </div>
         
         <p className="text-xs text-gray-400 leading-relaxed text-left bg-red-950/10 p-3 rounded-lg border border-red-950/40">
-          💡 <strong className="text-red-400">승리 전략</strong>: 시민 팀을 속여 3번의 재판에서 한 표 이상의 무죄 표를 내 승리하거나, 시민 팀이 승리 조건을 달성하더라도 마지막에 시민 리더의 정확한 정체를 저격하여 대역전승을 쟁취하십시오.
+          💡 <strong className="text-red-400">승리 전략</strong>: 3번의 재판에서 한 표 이상의 무죄 표를 내 승리하거나, 시민 팀이 승리 조건을 달성하더라도 마지막에 시민 리더의 정확한 정체를 밝혀 대역전승을 쟁취하십시오.
         </p>
       </div>
     );

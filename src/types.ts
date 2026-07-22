@@ -30,6 +30,7 @@ export interface RoundResult {
   guiltyVotes: number;
   innocentVotes: number;
   result: 'citizen' | 'criminal' | null; // citizen = guilty verdict, criminal = innocent verdict
+  memberVotes?: { playerIndex: number; vote: 'guilty' | 'innocent' }[];
 }
 
 export interface GameLog {
@@ -61,4 +62,8 @@ export interface GameState {
   isShufflingOrder?: boolean;
   tempJuryOrder?: number[];
   activeCheckIndex?: number | null;
+  roundTimer?: {
+    seconds: number;
+    isRunning: boolean;
+  };
 }

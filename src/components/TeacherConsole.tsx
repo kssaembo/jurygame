@@ -40,10 +40,76 @@ export default function TeacherConsole({ gameState, onUpdateState, onOpenManual 
   };
 
   // State for secret voting sub-phases
-  // 'blind' -> Voter has not opened ballot yet
-  // 'voting' -> Voter sees guilty/innocent options
-  // 'feedback' -> Voter clicked, screen covers immediately, wait for next voter
   const [voteSubPhase, setVoteSubPhase] = useState<'blind' | 'voting' | 'feedback'>('blind');
+
+  // Local state to track detailed member votes per round
+  const [currentMemberVotes, setCurrentMemberVotes] = useState<{ playerIndex: number; vote: 'guilty' | 'innocent' }[]>([]);
+
+  // Round timer state
+  const roundTimer = gameState.roundTimer || { seconds: 120, isRunning: false };
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    if (roundTimer.isRunning && roundTimer.seconds > 0) {
+      interval = setInterval(() => {
+        onUpdateState(prev => {
+          const curTimer = prev.roundTimer || { seconds: 120, isRunning: false };
+          if (!curTimer.isRunning || curTimer.seconds <= 0) {
+            return {
+              ...prev,
+              roundTimer: { seconds: 0, isRunning: false }
+            };
+          }
+          return {
+            ...prev,
+            roundTimer: {
+              ...curTimer,
+              seconds: curTimer.seconds - 1
+            }
+          };
+        });
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [roundTimer.isRunning, roundTimer.seconds]);
+
+  const handleToggleTimer = () => {
+    onUpdateState(prev => ({
+      ...prev,
+      roundTimer: {
+        seconds: prev.roundTimer?.seconds || 120,
+        isRunning: !(prev.roundTimer?.isRunning)
+      }
+    }));
+  };
+
+  const handleStopTimer = () => {
+    onUpdateState(prev => ({
+      ...prev,
+      roundTimer: {
+        seconds: 0,
+        isRunning: false
+      }
+    }));
+  };
+
+  const handleSetTimerSeconds = (secs: number) => {
+    onUpdateState(prev => ({
+      ...prev,
+      roundTimer: {
+        seconds: secs,
+        isRunning: true
+      }
+    }));
+  };
+
+  const handleForceEndGame = () => {
+    if (window.confirm('게임을 종료하고 메인 화면으로 이동하시겠습니까?')) {
+      handleRestart();
+    }
+  };
 
   // State for sniper selection
   const [selectedSniperTarget, setSelectedSniperTarget] = useState<number | null>(null);
@@ -265,6 +331,8 @@ export default function TeacherConsole({ gameState, onUpdateState, onOpenManual 
     if (activeVoterIndex === null) return;
     const voterPlayerIndex = currentProposal[activeVoterIndex];
 
+    setCurrentMemberVotes(prev => [...prev, { playerIndex: voterPlayerIndex, vote }]);
+
     onUpdateState(prev => {
       const copyStatus = { ...prev.votedStatus };
       copyStatus[voterPlayerIndex] = true;
@@ -331,7 +399,10 @@ export default function TeacherConsole({ gameState, onUpdateState, onOpenManual 
         guiltyVotes: guiltyCount,
         innocentVotes: innocentCount,
         result: resultWinner,
+        memberVotes: currentMemberVotes,
       };
+
+      setCurrentMemberVotes([]);
 
       return {
         ...prev,
@@ -472,10 +543,70 @@ export default function TeacherConsole({ gameState, onUpdateState, onOpenManual 
           <span className="text-[11px] font-mono text-gold-500 font-bold uppercase tracking-wider">
             교사 운영 페이지
           </span>
-          <span className="text-xs bg-gold-950 border border-gold-800 text-gold-400 font-bold px-2.5 py-1 rounded font-sans">
-            {phaseNames[phase] || phase.toUpperCase()}
-          </span>
+          <div className="flex items-center gap-2">
+            {phase !== 'setup' && (
+              <button
+                id="force-end-game-btn"
+                onClick={handleForceEndGame}
+                className="px-2.5 py-1 bg-red-950/80 border border-red-500/50 hover:bg-red-900 text-red-300 rounded font-bold text-xs flex items-center gap-1 transition"
+              >
+                <Skull className="w-3.5 h-3.5" /> 게임 강제 종료
+              </button>
+            )}
+            <span className="text-xs bg-gold-950 border border-gold-800 text-gold-400 font-bold px-2.5 py-1 rounded font-sans">
+              {phaseNames[phase] || phase.toUpperCase()}
+            </span>
+          </div>
         </div>
+
+        {/* Round Timer Control Bar */}
+        {phase !== 'setup' && phase !== 'game_over' && (
+          <div className="bg-black/60 border border-gold-950/60 p-3 rounded-xl mb-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-gold-400 font-mono">⏱️ 토론/진행 타이머:</span>
+              <span className="text-2xl font-black font-mono text-white px-3 py-0.5 bg-black rounded border border-gold-900">
+                {Math.floor((gameState.roundTimer?.seconds || 0) / 60).toString().padStart(2, '0')}:
+                {((gameState.roundTimer?.seconds || 0) % 60).toString().padStart(2, '0')}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <button
+                onClick={() => handleSetTimerSeconds((gameState.roundTimer?.seconds || 0) + 60)}
+                className="px-2.5 py-1 bg-gold-950 border border-gold-700/50 hover:bg-gold-900 text-gold-300 text-xs font-bold rounded"
+              >
+                +1분
+              </button>
+              <button
+                onClick={() => handleSetTimerSeconds((gameState.roundTimer?.seconds || 0) + 120)}
+                className="px-2.5 py-1 bg-gold-950 border border-gold-700/50 hover:bg-gold-900 text-gold-300 text-xs font-bold rounded"
+              >
+                +2분
+              </button>
+              <button
+                onClick={() => handleSetTimerSeconds((gameState.roundTimer?.seconds || 0) + 180)}
+                className="px-2.5 py-1 bg-gold-950 border border-gold-700/50 hover:bg-gold-900 text-gold-300 text-xs font-bold rounded"
+              >
+                +3분
+              </button>
+              <button
+                onClick={handleToggleTimer}
+                className={`px-3 py-1 rounded text-xs font-black tracking-wide flex items-center gap-1 ${
+                  gameState.roundTimer?.isRunning
+                    ? 'bg-amber-600 text-black hover:bg-amber-500'
+                    : 'bg-emerald-600 text-white hover:bg-emerald-500'
+                }`}
+              >
+                {gameState.roundTimer?.isRunning ? '⏸ 일시정지' : '▶ 시작'}
+              </button>
+              <button
+                onClick={handleStopTimer}
+                className="px-2.5 py-1 bg-gray-800 border border-gray-700 text-gray-300 hover:bg-gray-700 text-xs font-bold rounded"
+              >
+                ⏹ 타이머 종료
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Round Status Track for Teacher Console */}
         {phase !== 'setup' && (
@@ -517,8 +648,8 @@ export default function TeacherConsole({ gameState, onUpdateState, onOpenManual 
         {phase === 'president_order' && (
           <div id="teacher-president-order" className="space-y-8 py-8 text-center max-w-4xl mx-auto">
             <h4 className="text-4xl sm:text-5xl font-black text-gold-400 tracking-wider">배심원장 순서 무작위 결정</h4>
-            <p className="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed font-bold">
-              본 게임 진행에 앞서, 배심원단 지정을 주도할 배심원장 순서를 무작위로 추첨합니다. 아래 버튼을 눌러 스크린에 결과를 공개하세요.
+            <p className="text-xl sm:text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed font-black">
+              플레이어 여러분. 내가 몇 번째 배심원장이 되는지 순서를 잘 확인해 주세요.
             </p>
             
             {isGeneratingOrder ? (
@@ -781,7 +912,7 @@ export default function TeacherConsole({ gameState, onUpdateState, onOpenManual 
               <div className="space-y-4">
                 <div className="bg-[#0f0b0c] border-2 border-red-500/50 p-5 rounded-2xl shadow-xl animate-pulse">
                   <h4 className="text-xl font-black text-red-500 flex items-center justify-center gap-1.5 font-sans">
-                    🎯 최종 미션! 리더를 찾아라
+                    🎯 마지막으로 상대 팀 리더를 찾아주세요.
                   </h4>
                   <p className="text-xs text-gray-200 leading-relaxed mt-2.5 text-center">
                     {winnerTeam === 'citizen' ? (
@@ -896,8 +1027,8 @@ export default function TeacherConsole({ gameState, onUpdateState, onOpenManual 
             <div className="space-y-1">
               <span className="text-xs font-mono tracking-widest text-gold-500 uppercase font-bold">DRAW RESULT</span>
               <h3 className="text-2xl font-black text-white">🎉 배심원장 순서 확정 🎉</h3>
-              <p className="text-xs text-gray-400">
-                무작위 셔플을 통해 매 라운드 추천권을 가질 배심원장 순서가 결정되었습니다.
+              <p className="text-sm font-bold text-gray-200">
+                플레이어 여러분. 내가 몇 번째 배심원장이 되는지 순서를 잘 확인해 주세요.
               </p>
             </div>
 

@@ -1,0 +1,6 @@
+{
+  "name": "배심원 게임 지원기",
+  "description": "교사용 PC와 프로젝터를 활용하여 교실에서 즐기는 배심원 게임(시민 대 범죄자) 진행 지원 도구",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

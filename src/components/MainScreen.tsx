@@ -39,7 +39,7 @@ export default function MainScreen({ onStartClick, onOpenManual }: MainScreenPro
           transition={{ duration: 1, delay: 0.5 }}
           className="text-sm sm:text-base font-medium tracking-[0.3em] text-gold-500/95 pl-1"
         >
-          지니어스한 학급 놀이 프로젝트
+          지니어스 한 학급 놀이 프로젝트
         </motion.p>
       </div>
 
@@ -59,15 +59,15 @@ export default function MainScreen({ onStartClick, onOpenManual }: MainScreenPro
           className="absolute z-10 text-gold-400/90 drop-shadow-[0_0_20px_rgba(212,175,55,0.3)] flex flex-col items-center"
         >
           {/* Custom SVG Scale for a high-end styled look */}
-          <svg className="w-48 h-48 filter drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg className="w-52 h-52 filter drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
             {/* Beam / Pillar Base */}
-            <path d="M50 82 L50 25" stroke="url(#goldGradient)" strokeWidth="4" strokeLinecap="round" />
-            <path d="M38 82 L62 82" stroke="url(#goldGradient)" strokeWidth="4" strokeLinecap="round" />
-            <path d="M42 85 L58 85" stroke="url(#goldGradient)" strokeWidth="2" strokeLinecap="round" />
-            <circle cx="50" cy="82" r="3" fill="#D4AF37" />
+            <path d="M50 82 L50 25" stroke="url(#goldGradient)" strokeWidth="5" strokeLinecap="round" />
+            <path d="M38 82 L62 82" stroke="url(#goldGradient)" strokeWidth="5" strokeLinecap="round" />
+            <path d="M42 85 L58 85" stroke="url(#goldGradient)" strokeWidth="3" strokeLinecap="round" />
+            <circle cx="50" cy="82" r="3.5" fill="#D4AF37" />
 
             {/* Top decorative cap */}
-            <circle cx="50" cy="22" r="4" fill="url(#goldGradient)" stroke="#000" strokeWidth="1" />
+            <circle cx="50" cy="22" r="4.5" fill="url(#goldGradient)" stroke="#000" strokeWidth="1" />
             
             {/* Rotating / Swaying horizontal beam */}
             <motion.g
@@ -76,29 +76,27 @@ export default function MainScreen({ onStartClick, onOpenManual }: MainScreenPro
               style={{ originX: '50px', originY: '28px' }}
             >
               {/* Main Crossbar */}
-              <path d="M20 28 L80 28" stroke="url(#goldGradient)" strokeWidth="3" strokeLinecap="round" />
-              <circle cx="50" cy="28" r="2.5" fill="#FFF" />
-              <circle cx="20" cy="28" r="2" fill="#D4AF37" />
-              <circle cx="80" cy="28" r="2" fill="#D4AF37" />
+              <path d="M18 28 L82 28" stroke="url(#goldGradient)" strokeWidth="4" strokeLinecap="round" />
+              <circle cx="50" cy="28" r="3" fill="#FFF" />
 
               {/* Left Plate (Suspended) */}
               <g>
-                {/* Chains */}
-                <path d="M20 28 L10 52 M20 28 L30 52" stroke="#8A7322" strokeWidth="1" />
+                {/* Connecting Chains (highly visible golden lines) */}
+                <path d="M18 28 L8 52 M18 28 L28 52" stroke="#FFD700" strokeWidth="2" strokeLinecap="round" />
                 {/* Plate cup */}
-                <path d="M8 52 H32 C32 58 8 58 8 52 Z" fill="url(#goldGradient)" stroke="#8A7322" strokeWidth="0.5" />
+                <path d="M6 52 H30 C30 60 6 60 6 52 Z" fill="url(#goldGradient)" stroke="#FFD700" strokeWidth="1.5" />
                 {/* Balancing line */}
-                <line x1="8" y1="52" x2="32" y2="52" stroke="#D4AF37" strokeWidth="1.5" />
+                <line x1="6" y1="52" x2="30" y2="52" stroke="#FFF2B2" strokeWidth="2" />
               </g>
 
               {/* Right Plate (Suspended) */}
               <g>
-                {/* Chains */}
-                <path d="M80 28 L70 52 M80 28 L90 52" stroke="#8A7322" strokeWidth="1" />
+                {/* Connecting Chains (highly visible golden lines) */}
+                <path d="M82 28 L72 52 M82 28 L92 52" stroke="#FFD700" strokeWidth="2" strokeLinecap="round" />
                 {/* Plate cup */}
-                <path d="M68 52 H92 C92 58 68 58 68 52 Z" fill="url(#goldGradient)" stroke="#8A7322" strokeWidth="0.5" />
+                <path d="M70 52 H94 C94 60 70 60 70 52 Z" fill="url(#goldGradient)" stroke="#FFD700" strokeWidth="1.5" />
                 {/* Balancing line */}
-                <line x1="68" y1="52" x2="92" y2="52" stroke="#D4AF37" strokeWidth="1.5" />
+                <line x1="70" y1="52" x2="94" y2="52" stroke="#FFF2B2" strokeWidth="2" />
               </g>
             </motion.g>
 

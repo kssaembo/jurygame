@@ -341,17 +341,19 @@ export default function App() {
         )}
       </main>
 
-      {/* Floating Admin & Reset Button (Bottom Right) */}
+      {/* Floating Admin Log Button (Bottom Right) */}
       <div className="fixed bottom-6 right-6 z-40">
         <button
           id="floating-admin-logs-btn"
           onClick={handleOpenAdminLog}
-          className="p-3 bg-red-950/80 hover:bg-red-900 text-red-300 hover:text-white rounded-full border border-red-800 shadow-xl shadow-black/80 transition-all duration-300 hover:scale-105 flex items-center gap-2 group text-xs font-bold"
+          className={`px-4 py-3 rounded-full border shadow-2xl transition-all duration-300 hover:scale-105 flex items-center gap-2 text-xs font-black ${
+            gameState.phase === 'game_over'
+              ? 'bg-gradient-to-r from-gold-500 via-yellow-400 to-gold-500 text-black border-gold-300 ring-4 ring-gold-400 animate-bounce shadow-gold-500/50'
+              : 'bg-red-950/90 hover:bg-red-900 text-red-300 hover:text-white border-red-800 shadow-black/80'
+          }`}
         >
           <ShieldAlert className="w-5 h-5" />
-          <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 whitespace-nowrap">
-            관리자 모드 (로그/초기화)
-          </span>
+          <span>게임 과정 기록 확인</span>
         </button>
       </div>
 

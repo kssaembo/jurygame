@@ -257,13 +257,23 @@ export default function ProjectorDisplay({ gameState }: ProjectorDisplayProps) {
             </div>
           </div>
 
-          <div className="text-right">
-            <h3 className="font-display text-gold-400 text-lg font-bold tracking-widest">
-              {phase === 'game_over' ? '최종 판결' : `제 ${toRoman(currentRound)}차 재판`}
-            </h3>
-            <p className="text-[10px] font-mono text-gray-500 tracking-wider">
-              {phase === 'game_over' ? 'GAME OVER & RETROSPECTIVE' : ''}
-            </p>
+          <div className="flex items-center gap-4">
+            {gameState.roundTimer && (
+              <div className="flex items-center gap-2 bg-black/60 border border-gold-500/40 px-3.5 py-1.5 rounded-xl text-gold-400 font-mono">
+                <span className="text-xs font-bold text-gray-400 uppercase">남은 시간:</span>
+                <span className={`text-xl font-black ${gameState.roundTimer.isRunning ? 'text-gold-400 animate-pulse' : 'text-gray-400'}`}>
+                  {Math.floor(gameState.roundTimer.seconds / 60).toString().padStart(2, '0')}:{(gameState.roundTimer.seconds % 60).toString().padStart(2, '0')}
+                </span>
+              </div>
+            )}
+            <div className="text-right">
+              <h3 className="font-display text-gold-400 text-lg font-bold tracking-widest">
+                {phase === 'game_over' ? '최종 판결' : `제 ${toRoman(currentRound)}차 재판`}
+              </h3>
+              <p className="text-[10px] font-mono text-gray-500 tracking-wider">
+                {phase === 'game_over' ? 'GAME OVER & RETROSPECTIVE' : ''}
+              </p>
+            </div>
           </div>
         </div>
 
@@ -570,14 +580,14 @@ export default function ProjectorDisplay({ gameState }: ProjectorDisplayProps) {
                   <span className="inline-block px-6 py-2 bg-red-950 text-red-400 rounded-full text-lg font-black font-mono tracking-widest border border-red-500/30 animate-pulse uppercase">
                     THE SNIPER ROUND
                   </span>
-                  <h3 className="text-6xl font-display font-black text-white tracking-widest mt-2">
-                    최종 역전 리더 저격
+                  <h3 className="text-4xl sm:text-5xl font-display font-black text-white tracking-widest mt-2">
+                    마지막으로 상대 팀 리더를 찾아주세요.
                   </h3>
-                  <p className="text-2xl text-gray-100 font-bold leading-normal mt-4">
+                  <p className="text-xl sm:text-2xl text-gray-100 font-bold leading-relaxed mt-4">
                     {winnerTeam === 'citizen' ? (
-                      <span>재판 결과 <span className="text-gold-400 font-black">시민 팀(3승)</span>이 승리했으나, 범죄자 리더에게 최후의 역전 기회가 부여됩니다!</span>
+                      <span>재판 결과 <span className="text-gold-400 font-black">시민 팀(3승)</span>이 승리했으나,<br /> <span className="text-red-400 font-black">범죄자 리더</span>에게 최후의 역전 기회가 부여됩니다!</span>
                     ) : (
-                      <span>재판 결과 <span className="text-crimson-400 font-black">범죄자 팀(3승)</span>이 승리했으나, 시민 리더에게 최후의 역전 기회가 부여됩니다!</span>
+                      <span>재판 결과 <span className="text-crimson-400 font-black">범죄자 팀(3승)</span>이 승리했으나,<br /> <span className="text-gold-400 font-black">시민 리더</span>에게 최후의 역전 기회가 부여됩니다!</span>
                     )}
                   </p>
                 </div>
