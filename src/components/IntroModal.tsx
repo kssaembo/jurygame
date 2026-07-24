@@ -9,8 +9,9 @@ interface IntroModalProps {
   onRequestExit?: () => void;
 }
 
-// Global BGM Audio instance
+// Global BGM Audio instance and AudioContext
 let bgmAudioInstance: HTMLAudioElement | null = null;
+let audioCtx: AudioContext | null = null;
 
 function startIntroBGM() {
   try {
@@ -18,10 +19,11 @@ function startIntroBGM() {
     if (!bgmAudioInstance) {
       bgmAudioInstance = new Audio(targetUrl);
       bgmAudioInstance.loop = true;
-      bgmAudioInstance.volume = 0.5;
+      bgmAudioInstance.volume = 0.1; // Soft background music level
     } else {
       bgmAudioInstance.pause();
       bgmAudioInstance.currentTime = 0;
+      bgmAudioInstance.volume = 0.1;
     }
 
     const promise = bgmAudioInstance.play();
@@ -63,7 +65,7 @@ function getAudioContext(): AudioContext | null {
   }
 }
 
-// 1. Play crisp retro typewriter key tick sound
+// 1. Play smooth and soft typewriter key tick sound
 function playTypewriterTick() {
   const ctx = getAudioContext();
   if (!ctx) return;
@@ -72,20 +74,20 @@ function playTypewriterTick() {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     
-    // Crisp retro mechanical key tick with frequency sweep
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(1200 + Math.random() * 300, now);
-    osc.frequency.exponentialRampToValueAtTime(350, now + 0.03);
+    // Smooth sine wave with warm low frequency
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(320 + Math.random() * 60, now);
+    osc.frequency.exponentialRampToValueAtTime(180, now + 0.04);
     
-    // Volume level increased to 0.15 so it is clearly audible over BGM
-    gain.gain.setValueAtTime(0.15, now);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.03);
+    // Soft, gentle volume level (0.08)
+    gain.gain.setValueAtTime(0.08, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
     
     osc.connect(gain);
     gain.connect(ctx.destination);
     
     osc.start(now);
-    osc.stop(now + 0.035);
+    osc.stop(now + 0.045);
   } catch {
     // Ignore audio errors
   }
@@ -101,17 +103,17 @@ function playButtonClickSound() {
     const gain = ctx.createGain();
     
     osc.type = 'square';
-    osc.frequency.setValueAtTime(480, now);
-    osc.frequency.exponentialRampToValueAtTime(960, now + 0.06);
+    osc.frequency.setValueAtTime(520, now);
+    osc.frequency.exponentialRampToValueAtTime(1040, now + 0.07);
     
-    gain.gain.setValueAtTime(0.20, now);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+    gain.gain.setValueAtTime(0.40, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
     
     osc.connect(gain);
     gain.connect(ctx.destination);
     
     osc.start(now);
-    osc.stop(now + 0.07);
+    osc.stop(now + 0.08);
   } catch {
     // Ignore audio errors
   }
@@ -127,17 +129,17 @@ function playTransitionSound() {
     const gain = ctx.createGain();
     
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(300, now);
-    osc.frequency.exponentialRampToValueAtTime(1200, now + 0.15);
+    osc.frequency.setValueAtTime(350, now);
+    osc.frequency.exponentialRampToValueAtTime(1400, now + 0.18);
     
-    gain.gain.setValueAtTime(0.22, now);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+    gain.gain.setValueAtTime(0.45, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.19);
     
     osc.connect(gain);
     gain.connect(ctx.destination);
     
     osc.start(now);
-    osc.stop(now + 0.16);
+    osc.stop(now + 0.19);
   } catch {
     // Ignore audio errors
   }
@@ -154,7 +156,7 @@ function playSuccessChime() {
       const gain = ctx.createGain();
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(freq, now + idx * 0.07);
-      gain.gain.setValueAtTime(0.25, now + idx * 0.07);
+      gain.gain.setValueAtTime(0.45, now + idx * 0.07);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.07 + 0.4);
       osc.connect(gain);
       gain.connect(ctx.destination);
@@ -269,14 +271,18 @@ export default function IntroModal({ isOpen, onClose, onComplete, onRequestExit 
       let i = 0;
       const timer = setInterval(() => {
         if (i < targetText.length) {
+          const char = targetText[i];
           setTypedText(targetText.slice(0, i + 1));
-          playTypewriterTick();
+          // Play tick every 2 characters for a gentler typing sound, skip spaces
+          if (char !== ' ' && i % 2 === 0) {
+            playTypewriterTick();
+          }
           i++;
         } else {
           setIsTyping(false);
           clearInterval(timer);
         }
-      }, 30);
+      }, 55);
 
       return () => clearInterval(timer);
     }
@@ -292,14 +298,18 @@ export default function IntroModal({ isOpen, onClose, onComplete, onRequestExit 
       let i = 0;
       const timer = setInterval(() => {
         if (i < targetText.length) {
+          const char = targetText[i];
           setTypedText(targetText.slice(0, i + 1));
-          playTypewriterTick();
+          // Play tick every 2 characters for a gentler typing sound, skip spaces
+          if (char !== ' ' && i % 2 === 0) {
+            playTypewriterTick();
+          }
           i++;
         } else {
           setIsTyping(false);
           clearInterval(timer);
         }
-      }, 25);
+      }, 50);
 
       return () => clearInterval(timer);
     }
