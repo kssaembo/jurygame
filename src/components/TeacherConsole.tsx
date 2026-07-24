@@ -7,9 +7,11 @@ interface TeacherConsoleProps {
   gameState: GameState;
   onUpdateState: (newState: GameState | ((prev: GameState) => GameState)) => void;
   onOpenManual: () => void;
+  onResetToMain?: () => void;
+  onRequestExit?: () => void;
 }
 
-export default function TeacherConsole({ gameState, onUpdateState, onOpenManual }: TeacherConsoleProps) {
+export default function TeacherConsole({ gameState, onUpdateState, onOpenManual, onResetToMain, onRequestExit }: TeacherConsoleProps) {
   const {
     players,
     currentRound,
@@ -106,8 +108,13 @@ export default function TeacherConsole({ gameState, onUpdateState, onOpenManual 
   };
 
   const handleForceEndGame = () => {
-    if (window.confirm('게임을 종료하고 메인 화면으로 이동하시겠습니까?')) {
+    if (onRequestExit) {
+      onRequestExit();
+    } else if (window.confirm('게임을 종료하고 메인화면으로 이동하시겠습니까?')) {
       handleRestart();
+      if (onResetToMain) {
+        onResetToMain();
+      }
     }
   };
 
@@ -190,6 +197,7 @@ export default function TeacherConsole({ gameState, onUpdateState, onOpenManual 
       juryPresidentOrder: tempJuryOrder,
       currentPresidentOrderIndex: 0,
       phase: 'round_proposal',
+      roundTimer: { seconds: 120, isRunning: true },
       isShufflingOrder: false,
       tempJuryOrder: []
     }));
@@ -448,6 +456,7 @@ export default function TeacherConsole({ gameState, onUpdateState, onOpenManual 
         consecutiveRejections: 0,
         currentProposal: [],
         phase: 'round_proposal',
+        roundTimer: { seconds: 120, isRunning: true },
         currentPresidentOrderIndex: (prev.currentPresidentOrderIndex + 1) % players.length,
       }));
       addLog('시스템', `제 ${currentRound + 1}차 재판 준비 단계로 진입합니다.`);
@@ -544,13 +553,22 @@ export default function TeacherConsole({ gameState, onUpdateState, onOpenManual 
             교사 운영 페이지
           </span>
           <div className="flex items-center gap-2">
-            {phase !== 'setup' && (
+            {phase !== 'game_over' && (
               <button
                 id="force-end-game-btn"
                 onClick={handleForceEndGame}
-                className="px-2.5 py-1 bg-red-950/80 border border-red-500/50 hover:bg-red-900 text-red-300 rounded font-bold text-xs flex items-center gap-1 transition"
+                className="px-2.5 py-1 bg-red-950/80 border border-red-500/50 hover:bg-red-900 text-red-300 rounded font-bold text-xs flex items-center gap-1 transition cursor-pointer"
               >
                 <Skull className="w-3.5 h-3.5" /> 게임 강제 종료
+              </button>
+            )}
+            {phase === 'game_over' && (
+              <button
+                id="game-over-exit-btn"
+                onClick={handleRestart}
+                className="px-3.5 py-1.5 bg-gradient-to-r from-gold-500 via-yellow-400 to-gold-500 hover:from-gold-400 hover:to-yellow-300 text-black font-extrabold rounded-lg text-xs flex items-center gap-1.5 transition shadow-lg shadow-gold-500/30 animate-bounce cursor-pointer"
+              >
+                🏁 게임 종료
               </button>
             )}
             <span className="text-xs bg-gold-950 border border-gold-800 text-gold-400 font-bold px-2.5 py-1 rounded font-sans">
@@ -648,7 +666,7 @@ export default function TeacherConsole({ gameState, onUpdateState, onOpenManual 
         {phase === 'president_order' && (
           <div id="teacher-president-order" className="space-y-8 py-8 text-center max-w-4xl mx-auto">
             <h4 className="text-4xl sm:text-5xl font-black text-gold-400 tracking-wider">배심원장 순서 무작위 결정</h4>
-            <p className="text-xl sm:text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed font-black">
+            <p className="text-base sm:text-lg lg:text-xl text-gray-200 font-black whitespace-nowrap max-w-none text-center">
               플레이어 여러분. 내가 몇 번째 배심원장이 되는지 순서를 잘 확인해 주세요.
             </p>
             
@@ -792,7 +810,8 @@ export default function TeacherConsole({ gameState, onUpdateState, onOpenManual 
                 <div>
                   <p className="text-3xl font-black text-gold-400">비밀 투표용 가림막 활성화</p>
                   <p className="text-2xl text-gray-200 leading-relaxed font-bold max-w-2xl mx-auto mt-4">
-                    배심원 <span className="text-gold-400 font-extrabold underline">[{players[currentProposal[activeVoterIndex]]?.name}]</span>을(를) 교사용 컴퓨터 앞으로 부르고, 비밀 투표를 진행하세요.
+                    배심원 <span className="text-gold-400 font-extrabold underline">[{players[currentProposal[activeVoterIndex]]?.name}]</span>을(를) 교사용 컴퓨터 앞으로 부르고,<br />
+                    비밀 투표를 진행하세요.
                   </p>
                 </div>
                 <button
@@ -911,7 +930,7 @@ export default function TeacherConsole({ gameState, onUpdateState, onOpenManual 
             {assassinationStage ? (
               <div className="space-y-4">
                 <div className="bg-[#0f0b0c] border-2 border-red-500/50 p-5 rounded-2xl shadow-xl animate-pulse">
-                  <h4 className="text-xl font-black text-red-500 flex items-center justify-center gap-1.5 font-sans">
+                  <h4 className="text-base sm:text-lg md:text-xl font-black text-red-500 flex items-center justify-center gap-1.5 font-sans whitespace-nowrap max-w-none">
                     🎯 마지막으로 상대 팀 리더를 찾아주세요.
                   </h4>
                   <p className="text-xs text-gray-200 leading-relaxed mt-2.5 text-center">
@@ -1027,7 +1046,7 @@ export default function TeacherConsole({ gameState, onUpdateState, onOpenManual 
             <div className="space-y-1">
               <span className="text-xs font-mono tracking-widest text-gold-500 uppercase font-bold">DRAW RESULT</span>
               <h3 className="text-2xl font-black text-white">🎉 배심원장 순서 확정 🎉</h3>
-              <p className="text-sm font-bold text-gray-200">
+              <p className="text-sm sm:text-base font-bold text-gray-200 whitespace-nowrap">
                 플레이어 여러분. 내가 몇 번째 배심원장이 되는지 순서를 잘 확인해 주세요.
               </p>
             </div>

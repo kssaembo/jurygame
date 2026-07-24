@@ -5,9 +5,10 @@ import PlayerAvatar from './PlayerAvatar';
 
 interface ProjectorDisplayProps {
   gameState: GameState;
+  onUpdateState?: React.Dispatch<React.SetStateAction<GameState>>;
 }
 
-export default function ProjectorDisplay({ gameState }: ProjectorDisplayProps) {
+export default function ProjectorDisplay({ gameState, onUpdateState }: ProjectorDisplayProps) {
   const {
     players,
     currentRound,
@@ -28,6 +29,44 @@ export default function ProjectorDisplay({ gameState }: ProjectorDisplayProps) {
     finalWinner,
     activeCheckIndex,
   } = gameState;
+
+  const roundTimer = gameState.roundTimer || { seconds: 120, isRunning: false };
+
+  const handleToggleTimer = () => {
+    if (onUpdateState) {
+      onUpdateState(prev => ({
+        ...prev,
+        roundTimer: {
+          seconds: prev.roundTimer?.seconds || 120,
+          isRunning: !(prev.roundTimer?.isRunning)
+        }
+      }));
+    }
+  };
+
+  const handleStopTimer = () => {
+    if (onUpdateState) {
+      onUpdateState(prev => ({
+        ...prev,
+        roundTimer: {
+          seconds: 0,
+          isRunning: false
+        }
+      }));
+    }
+  };
+
+  const handleSetTimerSeconds = (secs: number) => {
+    if (onUpdateState) {
+      onUpdateState(prev => ({
+        ...prev,
+        roundTimer: {
+          seconds: secs,
+          isRunning: true
+        }
+      }));
+    }
+  };
 
   // Track revealed votes in ballot_result phase
   const [revealedVotes, setRevealedVotes] = useState<boolean[]>([]);
@@ -315,39 +354,101 @@ export default function ProjectorDisplay({ gameState }: ProjectorDisplayProps) {
         
         {/* Phase: Round Proposal (Nominating Jury) */}
         {phase === 'round_proposal' && currentPresident && (
-          <div className="space-y-6 w-full max-w-xl animate-fade-in">
-            <div className="space-y-2">
-              <p className="text-xs font-mono tracking-widest text-gold-500 uppercase">JURY PRESIDENT ACTIVE</p>
-              <h4 className="text-3xl font-display font-extrabold text-white flex items-center justify-center gap-2">
-                👑 <span className="text-gold-400 underline decoration-gold-600 underline-offset-4">{currentPresident.name}</span> 배심원장
-              </h4>
-              <p className="text-sm text-gray-300">
-                이번 재판을 이끌어갈 배심원단 <span className="text-gold-300 font-bold">{jurySize}명</span>을 골라 호명해 주세요!
-              </p>
+          <div className="w-full max-w-5xl animate-fade-in grid grid-cols-1 lg:grid-cols-12 gap-6 items-start text-left">
+            {/* Left: Jury President & Nominated Jury Candidates */}
+            <div className="lg:col-span-8 space-y-4">
+              <div className="space-y-1 text-center lg:text-left">
+                <p className="text-xs font-mono tracking-widest text-gold-500 uppercase">JURY PRESIDENT ACTIVE</p>
+                <h4 className="text-3xl font-display font-extrabold text-white flex items-center justify-center lg:justify-start gap-2">
+                  👑 <span className="text-gold-400 underline decoration-gold-600 underline-offset-4">{currentPresident.name}</span> 배심원장
+                </h4>
+                <p className="text-sm text-gray-300">
+                  이번 재판을 이끌어갈 배심원단 <span className="text-gold-300 font-bold">{jurySize}명</span>을 골라 호명해 주세요!
+                </p>
+              </div>
+
+              <div className="bg-[#0b0c11] border-2 border-gold-900/40 p-5 rounded-xl space-y-4 shadow-xl text-center">
+                <h5 className="text-sm font-black text-gold-400 tracking-wider uppercase">선택된 배심원 후보 (Nominated Jury)</h5>
+                {currentProposal.length === 0 ? (
+                  <div className="py-8 border-2 border-dashed border-gray-800 rounded-xl text-gray-500 text-xs italic">
+                    배심원장이 학생 이름을 호명하면 교사가 컴퓨터에 등록합니다...
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap justify-center gap-3">
+                    {currentProposal.map((idx, pIdx) => (
+                      <div
+                        key={idx}
+                        className="px-4 py-3 bg-[#0d0e14] border-2 border-gold-500/70 text-gold-300 font-bold rounded-2xl text-base shadow-xl flex flex-col items-center gap-2 w-28 animate-fade-in relative overflow-hidden"
+                      >
+                        <div className="absolute top-1 left-2 text-[9px] font-mono text-gold-600/80">#{pIdx + 1}</div>
+                        <PlayerAvatar index={idx} className="w-12 h-12" />
+                        <span className="tracking-wide text-sm truncate max-w-full">{players[idx]?.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="text-[10px] text-gray-400">
+                  모든 배심원이 선정되면 찬반 인준 투표가 시작됩니다.
+                </div>
+              </div>
             </div>
 
-            <div className="bg-[#0b0c11] border-2 border-gold-900/40 p-6 rounded-xl space-y-4 shadow-xl">
-              <h5 className="text-sm font-black text-gold-400 tracking-wider uppercase">선택된 배심원 후보 (Nominated Jury)</h5>
-              {currentProposal.length === 0 ? (
-                <div className="py-8 border-2 border-dashed border-gray-800 rounded-xl text-gray-500 text-xs italic">
-                  배심원장이 학생 이름을 호명하면 교사가 컴퓨터에 등록합니다...
+            {/* Right: Prominent Large Timer Display with Control Buttons */}
+            <div className="lg:col-span-4 bg-black/80 border-2 border-gold-500/60 p-5 rounded-2xl shadow-2xl flex flex-col items-center justify-between text-center space-y-4">
+              <div className="space-y-1 w-full border-b border-gold-950 pb-3">
+                <span className="text-xs font-mono font-bold text-gold-400 uppercase tracking-widest block">⏱️ 토론 & 진행 타이머</span>
+                <p className="text-[11px] text-gray-400">제한시간 내 배심원 지명을 완료하세요</p>
+              </div>
+
+              <div className="my-1 py-3 px-4 bg-black rounded-2xl border-2 border-gold-500/40 shadow-inner w-full text-center">
+                <span className={`text-5xl sm:text-6xl font-black font-mono tracking-wider ${
+                  roundTimer.isRunning ? 'text-gold-400 animate-pulse' : 'text-gray-400'
+                }`}>
+                  {Math.floor(roundTimer.seconds / 60).toString().padStart(2, '0')}:{(roundTimer.seconds % 60).toString().padStart(2, '0')}
+                </span>
+              </div>
+
+              {/* Interactive Timer Controls */}
+              <div className="w-full space-y-2 pt-1">
+                <div className="grid grid-cols-3 gap-1.5">
+                  <button
+                    onClick={() => handleSetTimerSeconds(roundTimer.seconds + 60)}
+                    className="py-1.5 bg-gold-950 hover:bg-gold-900 border border-gold-700/50 text-gold-300 font-bold text-xs rounded-lg transition"
+                  >
+                    +1분
+                  </button>
+                  <button
+                    onClick={() => handleSetTimerSeconds(roundTimer.seconds + 120)}
+                    className="py-1.5 bg-gold-950 hover:bg-gold-900 border border-gold-700/50 text-gold-300 font-bold text-xs rounded-lg transition"
+                  >
+                    +2분
+                  </button>
+                  <button
+                    onClick={() => handleSetTimerSeconds(roundTimer.seconds + 180)}
+                    className="py-1.5 bg-gold-950 hover:bg-gold-900 border border-gold-700/50 text-gold-300 font-bold text-xs rounded-lg transition"
+                  >
+                    +3분
+                  </button>
                 </div>
-              ) : (
-                <div className="flex flex-wrap justify-center gap-4">
-                  {currentProposal.map((idx, pIdx) => (
-                    <div
-                      key={idx}
-                      className="px-5 py-4 bg-[#0d0e14] border-2 border-gold-500/70 text-gold-300 font-bold rounded-2xl text-lg shadow-xl flex flex-col items-center gap-2.5 w-32 animate-fade-in relative overflow-hidden"
-                    >
-                      <div className="absolute top-1.5 left-2 text-[9px] font-mono text-gold-600/80">#{pIdx + 1}</div>
-                      <PlayerAvatar index={idx} className="w-14 h-14" />
-                      <span className="tracking-wide text-base">{players[idx]?.name}</span>
-                    </div>
-                  ))}
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={handleToggleTimer}
+                    className={`py-2 rounded-xl text-xs font-black tracking-wide flex items-center justify-center gap-1 transition ${
+                      roundTimer.isRunning
+                        ? 'bg-amber-600 text-black hover:bg-amber-500 shadow-md'
+                        : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-md'
+                    }`}
+                  >
+                    {roundTimer.isRunning ? '⏸ 일시정지' : '▶ 시작'}
+                  </button>
+                  <button
+                    onClick={handleStopTimer}
+                    className="py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 font-bold text-xs rounded-xl transition"
+                  >
+                    ⏹ 타이머 종료
+                  </button>
                 </div>
-              )}
-              <div className="text-[10px] text-gray-400">
-                모든 배심원이 선정되면 찬반 인준 투표가 시작됩니다.
               </div>
             </div>
           </div>
@@ -580,7 +681,7 @@ export default function ProjectorDisplay({ gameState }: ProjectorDisplayProps) {
                   <span className="inline-block px-6 py-2 bg-red-950 text-red-400 rounded-full text-lg font-black font-mono tracking-widest border border-red-500/30 animate-pulse uppercase">
                     THE SNIPER ROUND
                   </span>
-                  <h3 className="text-4xl sm:text-5xl font-display font-black text-white tracking-widest mt-2">
+                  <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-black text-white tracking-widest mt-2 whitespace-nowrap max-w-none">
                     마지막으로 상대 팀 리더를 찾아주세요.
                   </h3>
                   <p className="text-xl sm:text-2xl text-gray-100 font-bold leading-relaxed mt-4">

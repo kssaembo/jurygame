@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Player, Role, GameState } from '../types';
-import { Eye, EyeOff, ShieldAlert, Sparkles, Check, CheckCircle2, Clock } from 'lucide-react';
+import { Eye, EyeOff, ShieldAlert, Sparkles, Check, CheckCircle2, Clock, Skull } from 'lucide-react';
 
 interface IdentityCheckViewProps {
   players: Player[];
   gameState?: GameState;
   onUpdateState?: (newState: GameState | ((prev: GameState) => GameState)) => void;
   onComplete: () => void;
+  onRequestExit?: () => void;
 }
 
-export default function IdentityCheckView({ players, gameState, onUpdateState, onComplete }: IdentityCheckViewProps) {
+export default function IdentityCheckView({ players, gameState, onUpdateState, onComplete, onRequestExit }: IdentityCheckViewProps) {
   // Track which player index has checked their role
   const [checkedStatus, setCheckedStatus] = useState<{ [index: number]: boolean }>({});
   const [localActiveCheckIndex, setLocalActiveCheckIndex] = useState<number | null>(null);
@@ -164,14 +165,24 @@ export default function IdentityCheckView({ players, gameState, onUpdateState, o
 
   return (
     <div className="w-full max-w-4xl mx-auto py-6 px-4">
-      <div className="text-center mb-8">
-        <h2 className="font-display text-2xl sm:text-3xl font-extrabold tracking-widest text-gold-400 uppercase">
-          개별 비밀 정체 확인
-        </h2>
-        <p className="text-xs text-gray-400 mt-1">
-          모든 플레이어는 교사용 컴퓨터 앞으로 한 명씩 나와 비밀리에 정체를 확인해 주세요.
-        </p>
-        <div className="w-16 h-[2px] bg-gold-600 mx-auto mt-3" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 border-b border-gold-900/30 pb-4">
+        <div className="text-left">
+          <h2 className="font-display text-2xl sm:text-3xl font-extrabold tracking-widest text-gold-400 uppercase">
+            개별 비밀 정체 확인
+          </h2>
+          <p className="text-xs text-gray-400 mt-1">
+            모든 플레이어는 교사용 컴퓨터 앞으로 한 명씩 나와 비밀리에 정체를 확인해 주세요.
+          </p>
+        </div>
+        {onRequestExit && (
+          <button
+            id="identity-check-force-exit-btn"
+            onClick={onRequestExit}
+            className="px-3.5 py-2 bg-red-950/80 hover:bg-red-900 border border-red-500/50 text-red-300 hover:text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md shrink-0 self-start sm:self-auto hover:scale-105"
+          >
+            <Skull className="w-4 h-4" /> 게임 강제 종료
+          </button>
+        )}
       </div>
 
       {/* Grid of Players */}
@@ -237,16 +248,28 @@ export default function IdentityCheckView({ players, gameState, onUpdateState, o
                 </h3>
               </div>
               
-              {/* Dynamic Running Timer */}
-              <div className="flex flex-col items-end gap-1">
-                <div className="flex items-center gap-2 bg-gold-950/50 border border-gold-600/30 px-3.5 py-1.5 rounded-lg text-gold-400 font-mono font-bold text-sm">
-                  <Clock className="w-4 h-4 animate-spin-slow" />
-                  <span>정체 확인 시간:</span>
-                  <span className="text-white text-base font-black">{formatTimer(seconds)}</span>
+              <div className="flex items-center gap-3">
+                {/* Dynamic Running Timer */}
+                <div className="flex flex-col items-end gap-1">
+                  <div className="flex items-center gap-2 bg-gold-950/50 border border-gold-600/30 px-3.5 py-1.5 rounded-lg text-gold-400 font-mono font-bold text-sm">
+                    <Clock className="w-4 h-4 animate-spin-slow" />
+                    <span>정체 확인 시간:</span>
+                    <span className="text-white text-base font-black">{formatTimer(seconds)}</span>
+                  </div>
+                  <span className="text-[10px] text-gray-500 font-medium">
+                    학생별로 정체 확인 시간을 일정하게 유지해주세요.
+                  </span>
                 </div>
-                <span className="text-[10px] text-gray-500 font-medium">
-                  학생별로 정체 확인 시간을 일정하게 유지해주세요.
-                </span>
+
+                {onRequestExit && (
+                  <button
+                    onClick={onRequestExit}
+                    className="px-3 py-2 bg-red-950/80 hover:bg-red-900 border border-red-500/50 text-red-300 hover:text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow hover:scale-105 shrink-0"
+                    title="게임 강제 종료"
+                  >
+                    <Skull className="w-3.5 h-3.5" /> 게임 강제 종료
+                  </button>
+                )}
               </div>
             </div>
 

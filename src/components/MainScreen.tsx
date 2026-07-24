@@ -59,16 +59,16 @@ export default function MainScreen({ onStartClick, onOpenManual }: MainScreenPro
           className="absolute z-10 text-gold-400/90 drop-shadow-[0_0_20px_rgba(212,175,55,0.3)] flex flex-col items-center"
         >
           {/* Custom SVG Scale for a high-end styled look */}
-          <svg className="w-52 h-52 filter drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            {/* Beam / Pillar Base */}
-            <path d="M50 82 L50 25" stroke="url(#goldGradient)" strokeWidth="5" strokeLinecap="round" />
-            <path d="M38 82 L62 82" stroke="url(#goldGradient)" strokeWidth="5" strokeLinecap="round" />
-            <path d="M42 85 L58 85" stroke="url(#goldGradient)" strokeWidth="3" strokeLinecap="round" />
-            <circle cx="50" cy="82" r="3.5" fill="#D4AF37" />
-
-            {/* Top decorative cap */}
-            <circle cx="50" cy="22" r="4.5" fill="url(#goldGradient)" stroke="#000" strokeWidth="1" />
+          <svg className="w-52 h-52 filter drop-shadow-[0_2px_12px_rgba(212,175,55,0.6)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* Bright, high-contrast Center Beam / Pillar Base */}
+            <path d="M50 82 L50 25" stroke="url(#goldGradient)" strokeWidth="7" strokeLinecap="round" />
+            <path d="M50 82 L50 25" stroke="#FFF2B2" strokeWidth="2.5" strokeLinecap="round" />
             
+            {/* Pillar Stand Base */}
+            <path d="M36 82 L64 82" stroke="url(#goldGradient)" strokeWidth="6" strokeLinecap="round" />
+            <path d="M36 82 L64 82" stroke="#FFF2B2" strokeWidth="2" strokeLinecap="round" />
+            <path d="M40 85 L60 85" stroke="#FFD700" strokeWidth="3" strokeLinecap="round" />
+
             {/* Rotating / Swaying horizontal beam */}
             <motion.g
               animate={{ rotate: [-2.5, 2.5, -2.5] }}
@@ -110,9 +110,6 @@ export default function MainScreen({ onStartClick, onOpenManual }: MainScreenPro
               </linearGradient>
             </defs>
           </svg>
-          <div className="absolute bottom-6 font-mono text-[10px] uppercase text-gold-500/70 tracking-[0.4em] font-semibold">
-            EQUITY & JUSTICE
-          </div>
         </motion.div>
       </div>
 
