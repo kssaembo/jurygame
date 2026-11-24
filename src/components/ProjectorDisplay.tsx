@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type Dispatch, type SetStateAction } from 'react';
 import { GameState, Role } from '../types';
 import { Shield, Award, Users, AlertOctagon, HelpCircle, Eye, RefreshCw, Star, Skull } from 'lucide-react';
 import PlayerAvatar from './PlayerAvatar';
 
 interface ProjectorDisplayProps {
   gameState: GameState;
-  onUpdateState?: React.Dispatch<React.SetStateAction<GameState>>;
+  onUpdateState?: Dispatch<SetStateAction<GameState>>;
 }
 
 export default function ProjectorDisplay({ gameState, onUpdateState }: ProjectorDisplayProps) {

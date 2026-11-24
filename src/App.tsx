@@ -1,4 +1,4 @@
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect, useRef, useTransition } from 'react';
 import { GameState, Role, Player } from './types';
 import MainScreen from './components/MainScreen';
 import SetupView from './components/SetupView';
@@ -9,6 +9,7 @@ import InstructionModal from './components/InstructionModal';
 import AdminLogModal from './components/AdminLogModal';
 import IntroModal from './components/IntroModal';
 import { Monitor, HelpCircle, ShieldAlert, Layout, Eye, Copy, Check, Skull } from 'lucide-react';
+import { createProjectorId, createRoomCode, JuryHostNetwork, JuryProjectorNetwork, type JuryNetworkStatus } from './network';
 
 const initialGameState: GameState = {
   players: [],
@@ -49,19 +50,24 @@ export const ROLE_COUNTS: { [key: number]: { citizen: number; criminal: number }
 
 export default function App() {
   // Check if we are running in the standalone Projector tab
-  const [isProjectorOnlyTab, setIsProjectorOnlyTab] = useState(false);
+  const projectorMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('view') === 'projector';
+  const [isProjectorOnlyTab] = useState(projectorMode);
+  const [roomCode] = useState(() => {
+    const queryRoom = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('room')?.toUpperCase() : '';
+    if (queryRoom) return queryRoom;
+    if (projectorMode) return '';
+    return sessionStorage.getItem('jury_game_room') || createRoomCode();
+  });
+  const networkRef = useRef<JuryHostNetwork | null>(null);
+  const [networkStatus, setNetworkStatus] = useState<JuryNetworkStatus>('connecting');
+  const [networkMessage, setNetworkMessage] = useState('');
   const [showMainScreen, setShowMainScreen] = useState(true);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setIsProjectorOnlyTab(window.location.search.includes('view=projector'));
-    }
-  }, []);
 
   // Central Game State synced via localstorage & BroadcastChannel
   const [gameState, setGameState] = useState<GameState>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('jury_game_state');
+      const storageKey = projectorMode && roomCode ? `jury_game_state_${roomCode}` : 'jury_game_state';
+      const saved = localStorage.getItem(storageKey);
       if (saved) {
         try {
           return JSON.parse(saved);
@@ -74,6 +80,38 @@ export default function App() {
   });
 
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (isProjectorOnlyTab) {
+      if (!roomCode) return;
+      let projectorId: string = createProjectorId();
+      try {
+        const key = `jury_projector_id_${roomCode}`;
+        projectorId = sessionStorage.getItem(key) || projectorId;
+        sessionStorage.setItem(key, projectorId);
+      } catch { /* A temporary ID is sufficient for this tab. */ }
+      const network = new JuryProjectorNetwork(
+        roomCode,
+        projectorId,
+        state => {
+          setNetworkMessage('');
+          startTransition(() => setGameState(state));
+          try { localStorage.setItem(`jury_game_state_${roomCode}`, JSON.stringify(state)); } catch { /* State remains in memory. */ }
+        },
+        (status, message) => { setNetworkStatus(status); setNetworkMessage(message ?? ''); },
+      );
+      network.connect();
+      return () => network.disconnect();
+    }
+    sessionStorage.setItem('jury_game_room', roomCode);
+    const network = new JuryHostNetwork(roomCode, gameState, message => console.warn(message));
+    networkRef.current = network;
+    network.connect();
+    return () => {
+      network.disconnect();
+      if (networkRef.current === network) networkRef.current = null;
+    };
+  }, [isProjectorOnlyTab, roomCode]);
 
   // Layout mode for the Teacher's primary tab
   const [layoutMode, setLayoutMode] = useState<'split' | 'teacher_only' | 'projector_only'>('teacher_only');
@@ -103,6 +141,7 @@ export default function App() {
       const resolved = typeof newState === 'function' ? newState(prev) : newState;
       if (typeof window !== 'undefined') {
         localStorage.setItem('jury_game_state', JSON.stringify(resolved));
+        networkRef.current?.updateState(resolved);
         // Broadcast to other tabs immediately
         try {
           const channel = new BroadcastChannel('jury_game_channel');
@@ -202,14 +241,14 @@ export default function App() {
 
   const handleOpenProjectorWindow = () => {
     if (typeof window !== 'undefined') {
-      const url = window.location.origin + window.location.pathname + '?view=projector';
+      const url = window.location.origin + window.location.pathname + `?view=projector&room=${roomCode}`;
       window.open(url, '_blank', 'width=1200,height=800,menubar=no,toolbar=no,location=no');
     }
   };
 
   const handleCopyProjectorLink = () => {
     if (typeof window !== 'undefined') {
-      const url = window.location.origin + window.location.pathname + '?view=projector';
+      const url = window.location.origin + window.location.pathname + `?view=projector&room=${roomCode}`;
       navigator.clipboard.writeText(url).then(() => {
         setCopiedLink(true);
         setTimeout(() => setCopiedLink(false), 2000);
@@ -225,7 +264,7 @@ export default function App() {
   };
 
   const handleResetToMain = () => {
-    setGameState(initialGameState);
+    updateGameState(initialGameState);
     setShowMainScreen(true);
     setIsIntroOpen(false);
     setIsExitConfirmOpen(false);
@@ -236,6 +275,7 @@ export default function App() {
   if (isProjectorOnlyTab) {
     return (
       <div className="min-h-screen bg-black text-gray-100 p-6 flex flex-col justify-between select-none">
+        {!roomCode ? <div className="projector-network-notice error"><b>학급 코드가 없습니다.</b><span>교사 운영 페이지의 새 창 열기 버튼을 이용해 주세요.</span></div> : networkStatus !== 'connected' && <div className={`projector-network-notice ${networkStatus}`}><b>교사 화면 연결 중</b><span>{networkMessage || `학급 코드 ${roomCode}의 게임을 불러오고 있습니다.`}</span></div>}
         <div className="flex-1">
           <ProjectorDisplay gameState={gameState} />
         </div>
@@ -368,7 +408,7 @@ export default function App() {
             {/* Right/Projector Presentation Column */}
             {layoutMode !== 'teacher_only' && (
               <div className={`${layoutMode === 'projector_only' ? 'xl:col-span-12' : 'xl:col-span-7'} flex flex-col`}>
-                <ProjectorDisplay gameState={gameState} onUpdateState={setGameState} />
+                <ProjectorDisplay gameState={gameState} onUpdateState={updateGameState} />
               </div>
             )}
 
